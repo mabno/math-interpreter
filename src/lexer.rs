@@ -4,7 +4,7 @@ use regex::Regex;
 
 use crate::structs::Token;
 
-const NUMBER_REGEX: &str = r"^\d+$";
+const NUMBER_REGEX: &str = r"^\d+(\.\d*)?$";
 
 fn is_number(source: &str) -> bool {
     let re = Regex::new(NUMBER_REGEX).unwrap();
