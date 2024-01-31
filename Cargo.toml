@@ -9,3 +9,7 @@ edition = "2021"
 regex = "1.10.3"
 serde = { version = "1.0.196", features = ["derive"] }
 serde_json = "1.0.113"
+
+[[test]]
+name = "unit_tests"
+path = "tests/mod_tests.rs"

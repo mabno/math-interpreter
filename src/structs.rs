@@ -11,7 +11,8 @@ pub enum Token {
     RightParenthesis,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+
 pub enum Node {
     Root,
     Parenthesis(Box<Node>),

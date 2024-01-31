@@ -1,12 +1,12 @@
-use std::io;
-mod eval;
-mod lexer;
-mod parser;
-mod structs;
+pub mod eval;
+pub mod lexer;
+pub mod parser;
+pub mod structs;
 
 use crate::eval::eval;
 use crate::lexer::lexer;
 use crate::parser::parse;
+use std::io;
 
 fn main() {
     let mut input = String::new();
