@@ -1,28 +1,6 @@
-use crate::structs::Token;
+use crate::structs::{Node, Token};
 
-#[derive(Debug)]
-enum NonTerminalType {
-    Expression,
-    BetweenParenthesisExpression,
-    Add,
-    Subtract,
-    Multiply,
-    Divide,
-}
-
-#[derive(Debug)]
-enum NodeType {
-  Terminal(Token),
-  NonTerminal(NonTerminalType)
-}
-
-#[derive(Debug)]
-pub struct Node {
-    children: Vec<Node>,
-    t: NodeType
-}
-
-impl Node {
+/* impl Node {
     fn new(t: NodeType) -> Node {
         Node {
             children: Vec::new(),
@@ -34,8 +12,40 @@ impl Node {
         self.children.push(child);
     }
 }
+ */
 
+// Parsea un número
+fn parse_number(tokens: &[Token]) -> Option<Node> {
+    if tokens.len() == 1 {
+        match &tokens[0] {
+            Token::Number(n) => {
+                let node = Node::Number(n.to_string());
+                return Some(node);
+            }
+            _ => {}
+        }
+    }
+    return None;
+}
 
+// Parsea un número negativo
+fn parse_negative_number(tokens: &[Token]) -> Option<Node> {
+    if tokens.len() == 2 {
+        match &tokens[0] {
+            Token::MinusOp => match &tokens[1] {
+                Token::Number(n) => {
+                    let node = Node::Number(format!("-{}", n));
+                    return Some(node);
+                }
+                _ => {}
+            },
+            _ => {}
+        }
+    }
+    return None;
+}
+
+// Parsea la operación suma entre dos expresiones
 fn parse_add(tokens: &[Token]) -> Option<Node> {
     let mut opened_parenthesis = 0;
 
@@ -49,24 +59,23 @@ fn parse_add(tokens: &[Token]) -> Option<Node> {
             }
             Token::PlusOp => {
                 if opened_parenthesis == 0 {
-                    let mut node = Node::new(NodeType::NonTerminal(NonTerminalType::Add));
-                    let left_side = parse_expression(&tokens[0..i]);
-                    let right_side = parse_expression(&tokens[i+1..]);
-                    if let Some(n) = left_side { node.add_child(n) }
-                    node.add_child(Node::new(NodeType::Terminal(Token::PlusOp)));
-                    if let Some(n) = right_side { node.add_child(n) }
-                    return Some(node);
-              
+                    let mut node: Option<Node> = None;
+                    if let Some(left_side) = parse_left_side_expression(&tokens[0..i], &node) {
+                        if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
+                            node = Some(Node::Add(Box::new(left_side), Box::new(right_side)));
+                            return node;
+                        }
+                    }
                 }
             }
 
             _ => {}
         }
-
-      }
+    }
     return None;
 }
 
+// Parsea la operación resta entre dos expresiones
 fn parse_substract(tokens: &[Token]) -> Option<Node> {
     let mut opened_parenthesis = 0;
 
@@ -80,25 +89,23 @@ fn parse_substract(tokens: &[Token]) -> Option<Node> {
             }
             Token::MinusOp => {
                 if opened_parenthesis == 0 {
-                    let mut node = Node::new(NodeType::NonTerminal(NonTerminalType::Add));
-                    let left_side = parse_expression(&tokens[0..i]);
-                    let right_side = parse_expression(&tokens[i+1..]);
-                    if let Some(n) = left_side { node.add_child(n) }
-                    node.add_child(Node::new(NodeType::Terminal(Token::MinusOp)));
-                    if let Some(n) = right_side { node.add_child(n) }
-                    return Some(node);
-              
+                    let mut node: Option<Node> = None;
+                    if let Some(left_side) = parse_expression(&tokens[0..i], &node) {
+                        if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
+                            node = Some(Node::Subtract(Box::new(left_side), Box::new(right_side)));
+                            return node;
+                        }
+                    }
                 }
             }
 
             _ => {}
         }
-
-      }
+    }
     return None;
 }
 
-
+// Parsea la operación multiplicación entre dos expresiones
 fn parse_multiply(tokens: &[Token]) -> Option<Node> {
     let mut opened_parenthesis = 0;
 
@@ -112,25 +119,23 @@ fn parse_multiply(tokens: &[Token]) -> Option<Node> {
             }
             Token::MultiplyOp => {
                 if opened_parenthesis == 0 {
-                    let mut node = Node::new(NodeType::NonTerminal(NonTerminalType::Add));
-                    let left_side = parse_expression(&tokens[0..i]);
-                    let right_side = parse_expression(&tokens[i+1..]);
-                    if let Some(n) = left_side { node.add_child(n) }
-                    node.add_child(Node::new(NodeType::Terminal(Token::MultiplyOp)));
-                    if let Some(n) = right_side { node.add_child(n) }
-                    return Some(node);
-              
+                    let mut node: Option<Node> = None;
+                    if let Some(left_side) = parse_expression(&tokens[0..i], &node) {
+                        if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
+                            node = Some(Node::Multiply(Box::new(left_side), Box::new(right_side)));
+                            return node;
+                        }
+                    }
                 }
             }
 
             _ => {}
         }
-
-      }
+    }
     return None;
 }
 
-
+// Parsea la operación division entre dos expresiones
 fn parse_divide(tokens: &[Token]) -> Option<Node> {
     let mut opened_parenthesis = 0;
 
@@ -144,66 +149,71 @@ fn parse_divide(tokens: &[Token]) -> Option<Node> {
             }
             Token::DivideOp => {
                 if opened_parenthesis == 0 {
-                    let mut node = Node::new(NodeType::NonTerminal(NonTerminalType::Add));
-                    let left_side = parse_expression(&tokens[0..i]);
-                    let right_side = parse_expression(&tokens[i+1..]);
-                    if let Some(n) = left_side { node.add_child(n) }
-                    node.add_child(Node::new(NodeType::Terminal(Token::DivideOp)));
-                    if let Some(n) = right_side { node.add_child(n) }
-                    return Some(node);
-              
+                    let mut node: Option<Node> = None;
+                    if let Some(left_side) = parse_expression(&tokens[0..i], &node) {
+                        if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
+                            node = Some(Node::Divide(Box::new(left_side), Box::new(right_side)));
+                            return node;
+                        }
+                    }
                 }
             }
 
             _ => {}
         }
-
-      }
+    }
     return None;
 }
 
-
-
 fn parse_between_parenthesis_expression(tokens: &[Token]) -> Option<Node> {
-  let first = tokens.first();
-  let last = tokens.last();
+    let first = tokens.first();
+    let last = tokens.last();
 
-  if first.is_some() && last.is_some() {
-      let first = first.unwrap();
-      let last = last.unwrap();
+    if first.is_some() && last.is_some() {
+        let first = first.unwrap();
+        let last = last.unwrap();
 
-      if *first == Token::LeftParenthesis && *last == Token::RightParenthesis {
-        let mut node = Node::new(NodeType::NonTerminal(NonTerminalType::BetweenParenthesisExpression));
-        node.add_child(Node::new(NodeType::Terminal(Token::LeftParenthesis)));
-        let inside_expression = parse_expression(&tokens[1..tokens.len()-1]);
-        if let Some(n) = inside_expression { node.add_child(n) }
-        node.add_child(Node::new(NodeType::Terminal(Token::RightParenthesis)));
-        return Some(node);
+        if *first == Token::LeftParenthesis && *last == Token::RightParenthesis {
+            let mut node: Option<Node> = None;
+            let inside_expression = parse_left_side_expression(&tokens[1..tokens.len() - 1], &node);
+            if let Some(n) = inside_expression {
+                return Some(Node::Parenthesis(Box::new(n)));
+            }
         }
-  }
+    }
     None
 }
 
+// Es una expresion normal, solamente contempla la posibilidad de que sea un numero negativo
+fn parse_left_side_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
+    let mut node = parse_negative_number(tokens);
+    if node.is_none() {
+        node = parse_expression(tokens, parent);
+    }
+    node
+}
 
-fn parse_expression(tokens: &[Token]) -> Option<Node> {
+// Parsea una expresión, puede ser una operación o un número no negativo
+fn parse_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
     let mut node = parse_between_parenthesis_expression(&tokens);
     if node.is_none() {
-      node = parse_add(&tokens);
+        node = parse_add(tokens);
     }
     if node.is_none() {
-        node = parse_substract(&tokens);
-    }
-    if node.is_none(){
-        node = parse_multiply(&tokens);
+        node = parse_substract(tokens);
     }
     if node.is_none() {
-        node = parse_divide(&tokens);
+        node = parse_multiply(tokens);
+    }
+    if node.is_none() {
+        node = parse_divide(tokens);
+    }
+    if node.is_none() {
+        node = parse_number(tokens)
     }
 
     node
-   
 }
-
 
 /*
 
@@ -214,23 +224,29 @@ Grammar!
 S -> Expression
 
 Expression -> Add | Substract |
-              Multiply | Divide | BetweenParenthesisExpression
-        
-BetweenParenthesisExpression ->  LeftParenthesisToken Expression RightParenthesisToken
+              Multiply | Divide | BetweenParenthesisExpression | Number | LeftSideExpression
 
-Expression -> NumberToken
+BetweenParenthesisExpression ->  LeftParenthesis LeftSideExpression RightParenthesis
 
-Add -> Expression PlusToken Expression
-Substract -> Expression MinusToken Expression
-Multiply -> Expression MultiplyToken Expression
-Divide -> Expression DivideToken Expression
+
+Add -> LeftSideExpression PlusOp Expression
+Substract -> LeftSideExpression MinusOp Expression
+Multiply -> LeftSideExpression MultiplyOp Expression
+Divide -> LeftSideExpression DivideOp Expression
 
 
 */
 
-
 // Build AST (Abstract-Syntax-Tree)
 pub fn parse(tokens: Vec<Token>) -> Option<Node> {
-    let root = parse_expression(&tokens);
+    let root = parse_left_side_expression(&tokens, &Some(Node::Root));
+
+    if root.is_none() {
+        panic!("SyntaxError: Invalid syntax");
+    }
+
+    let serialized = serde_json::to_string_pretty(&root).unwrap();
+    //println!("{}", serialized);
+
     root
 }
