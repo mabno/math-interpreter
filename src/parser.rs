@@ -75,7 +75,7 @@ fn parse_add(tokens: &[Token]) -> Option<Node> {
                 if opened_parenthesis == 0 {
                     let mut node: Option<Node> = None;
                     if let Some(left_side) = parse_left_side_expression(&tokens[0..i], &node) {
-                        if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
+                        if let Some(right_side) = parse_left_side_expression(&tokens[i + 1..], &node) {
                             node = Some(Node::Add(Box::new(left_side), Box::new(right_side)));
                             return node;
                         }
@@ -102,10 +102,15 @@ fn parse_substract(tokens: &[Token]) -> Option<Node> {
                 opened_parenthesis -= 1;
             }
             Token::MinusOp => {
-                if opened_parenthesis == 0 {
+                if opened_parenthesis == 0{
                     let mut node: Option<Node> = None;
-                    if let Some(left_side) = parse_left_side_expression(&tokens[0..i], &node) {
+                    println!("{:?}", &tokens[0..i]);
+                    println!("{:?}", &tokens[i..]);
+                    //panic!("dsfdsf");
+                    if let Some(left_side) = parse_expression(&tokens[0..i], &node) {
                         if let Some(right_side) = parse_left_side_expression(&tokens[i..], &node) {
+
+                        
                             node = Some(Node::Add(Box::new(left_side), Box::new(right_side)));
                             return node;
                         }
@@ -200,8 +205,10 @@ fn parse_between_parenthesis_expression(tokens: &[Token]) -> Option<Node> {
 
 // Es una expresion normal, solamente contempla la posibilidad de que sea un numero negativo
 fn parse_left_side_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
-
-    if tokens.len() > 0 && tokens[0] == Token::MinusOp{
+    if tokens.len() == 0 {
+        return Some(Node::Number("0".to_string()));
+    }
+    if tokens.len() > 1 && tokens[0] == Token::MinusOp{
         if let Some(n) = parse_expression(&tokens[1..], parent) {
         let mut node = Some(Node::Negative(
                 Box::new(
@@ -211,14 +218,14 @@ fn parse_left_side_expression(tokens: &[Token], parent: &Option<Node>) -> Option
         }
     }
     
-    parse_expression(tokens, parent)
+    None
 }
 
 // Parsea una expresión, puede ser una operación o un número no negativo
 fn parse_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
-    let mut node = parse_add(&tokens);
+    let mut node = parse_between_parenthesis_expression(tokens);
     if node.is_none() {
-        node = parse_between_parenthesis_expression(tokens);
+        node = parse_add(tokens);
     }
     if node.is_none() {
         node = parse_substract(tokens);
