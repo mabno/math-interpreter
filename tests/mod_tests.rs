@@ -2,9 +2,9 @@
 mod tests {
     use math_interpreter::structs::{Node, Token};
 
+    use math_interpreter::eval::eval;
     use math_interpreter::lexer::lexer;
     use math_interpreter::parser::parse;
-    use math_interpreter::eval::eval;
 
     #[test]
     fn test_lexer() {
@@ -42,10 +42,7 @@ mod tests {
         let tokens = lexer("(1 + 2) * 9");
         let ast = parse(tokens);
         let result = eval(ast.unwrap());
-        assert_eq!(
-            result,
-            27.0
-        );
+        assert_eq!(result, 27.0);
     }
 
     #[test]
@@ -53,10 +50,7 @@ mod tests {
         let tokens = lexer("(1 / 2) * 2 + 5");
         let ast = parse(tokens);
         let result = eval(ast.unwrap());
-        assert_eq!(
-            result,
-            6.0
-        );
+        assert_eq!(result, 6.0);
     }
 
     #[test]
@@ -64,10 +58,7 @@ mod tests {
         let tokens = lexer("- 5 * 8  / 2");
         let ast = parse(tokens);
         let result = eval(ast.unwrap());
-        assert_eq!(
-            result,
-            -20.0
-        );
+        assert_eq!(result, -20.0);
     }
 
     #[test]
@@ -75,10 +66,7 @@ mod tests {
         let tokens = lexer("1 - (5 ^ 2) - 0.1");
         let ast = parse(tokens);
         let result = eval(ast.unwrap());
-        assert_eq!(
-            result,
-            -24.1
-        );
+        assert_eq!(result, -24.1);
     }
 
     #[test]
@@ -86,10 +74,7 @@ mod tests {
         let tokens = lexer("1 - 1 - 1 - 1");
         let ast = parse(tokens);
         let result = eval(ast.unwrap());
-        assert_eq!(
-            result,
-            -2.0
-        );
+        assert_eq!(result, -2.0);
     }
 
     #[test]
@@ -97,10 +82,7 @@ mod tests {
         let tokens = lexer("1 - (- 1)");
         let ast = parse(tokens);
         let result = eval(ast.unwrap());
-        assert_eq!(
-            result,
-            2.0
-        );
+        assert_eq!(result, 2.0);
     }
 
     #[test]
@@ -108,19 +90,13 @@ mod tests {
         let tokens = lexer("-0-0-0+1");
         let ast = parse(tokens);
         let result = eval(ast.unwrap());
-        assert_eq!(
-            result,
-            1.0
-        );
+        assert_eq!(result, 1.0);
     }
     #[test]
     fn test_eval8() {
         let tokens = lexer("-(-(-3))");
         let ast = parse(tokens);
         let result = eval(ast.unwrap());
-        assert_eq!(
-            result,
-            -3.0
-        );
+        assert_eq!(result, -3.0);
     }
 }
