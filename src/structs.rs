@@ -9,6 +9,7 @@ pub enum Token {
     DivideOp,
     LeftParenthesis,
     RightParenthesis,
+    PowOp,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -17,8 +18,8 @@ pub enum Node {
     Root,
     Parenthesis(Box<Node>),
     Add(Box<Node>, Box<Node>),
-    Subtract(Box<Node>, Box<Node>),
     Multiply(Box<Node>, Box<Node>),
     Divide(Box<Node>, Box<Node>),
+    Pow(Box<Node>, Box<Node>),
     Number(String),
 }

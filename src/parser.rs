@@ -24,8 +24,9 @@ fn parse_number(tokens: &[Token]) -> Option<Node> {
             }
             _ => {}
         }
-    }
-    return None;
+    } 
+    //return Some(Node::Number("0".to_string())); 
+    return None
 }
 
 // Parsea un número negativo
@@ -39,6 +40,36 @@ fn parse_negative_number(tokens: &[Token]) -> Option<Node> {
                 }
                 _ => {}
             },
+            _ => {}
+        }
+    }
+    return None;
+}
+
+// Parsea la operación potencia entre dos expresiones
+fn parse_pow(tokens: &[Token]) -> Option<Node> {
+    let mut opened_parenthesis = 0;
+
+    for (i, token) in tokens.iter().enumerate() {
+        match token {
+            Token::LeftParenthesis => {
+                opened_parenthesis += 1;
+            }
+            Token::RightParenthesis => {
+                opened_parenthesis -= 1;
+            }
+            Token::PowOp => {
+                if opened_parenthesis == 0 {
+                    let mut node: Option<Node> = None;
+                    if let Some(left_side) = parse_expression(&tokens[0..i], &node) {
+                        if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
+                            node = Some(Node::Pow(Box::new(left_side), Box::new(right_side)));
+                            return node;
+                        }
+                    }
+                }
+            }
+
             _ => {}
         }
     }
@@ -90,9 +121,9 @@ fn parse_substract(tokens: &[Token]) -> Option<Node> {
             Token::MinusOp => {
                 if opened_parenthesis == 0 {
                     let mut node: Option<Node> = None;
-                    if let Some(left_side) = parse_expression(&tokens[0..i], &node) {
-                        if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
-                            node = Some(Node::Subtract(Box::new(left_side), Box::new(right_side)));
+                    if let Some(left_side) = parse_left_side_expression(&tokens[0..i], &node) {
+                        if let Some(right_side) = parse_left_side_expression(&tokens[i..], &node) {
+                            node = Some(Node::Add(Box::new(left_side), Box::new(right_side)));
                             return node;
                         }
                     }
@@ -120,7 +151,7 @@ fn parse_multiply(tokens: &[Token]) -> Option<Node> {
             Token::MultiplyOp => {
                 if opened_parenthesis == 0 {
                     let mut node: Option<Node> = None;
-                    if let Some(left_side) = parse_expression(&tokens[0..i], &node) {
+                    if let Some(left_side) = parse_left_side_expression(&tokens[0..i], &node) {
                         if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
                             node = Some(Node::Multiply(Box::new(left_side), Box::new(right_side)));
                             return node;
@@ -150,7 +181,7 @@ fn parse_divide(tokens: &[Token]) -> Option<Node> {
             Token::DivideOp => {
                 if opened_parenthesis == 0 {
                     let mut node: Option<Node> = None;
-                    if let Some(left_side) = parse_expression(&tokens[0..i], &node) {
+                    if let Some(left_side) = parse_left_side_expression(&tokens[0..i], &node) {
                         if let Some(right_side) = parse_expression(&tokens[i + 1..], &node) {
                             node = Some(Node::Divide(Box::new(left_side), Box::new(right_side)));
                             return node;
@@ -197,6 +228,9 @@ fn parse_left_side_expression(tokens: &[Token], parent: &Option<Node>) -> Option
 fn parse_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
     let mut node = parse_between_parenthesis_expression(&tokens);
     if node.is_none() {
+        node = parse_pow(tokens);
+    }
+    if node.is_none() {
         node = parse_add(tokens);
     }
     if node.is_none() {
@@ -241,12 +275,14 @@ Divide -> LeftSideExpression DivideOp Expression
 pub fn parse(tokens: Vec<Token>) -> Option<Node> {
     let root = parse_left_side_expression(&tokens, &Some(Node::Root));
 
-    if root.is_none() {
-        panic!("SyntaxError: Invalid syntax");
-    }
+   
 
     let serialized = serde_json::to_string_pretty(&root).unwrap();
     //println!("{}", serialized);
+
+    if root.is_none() {
+        panic!("SyntaxError: Invalid syntax");
+    }
 
     root
 }

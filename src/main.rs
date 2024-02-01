@@ -9,20 +9,23 @@ use crate::parser::parse;
 use std::io;
 
 fn main() {
-    let mut input = String::new();
-    match io::stdin().read_line(&mut input) {
-        Ok(_) => {
-            //println!("Success!");
+    println!("Welcome to the math interpreter! Written by Mariano 😊");
+    loop {
+        let mut input = String::new();
+        match io::stdin().read_line(&mut input) {
+            Ok(_) => {
+                //println!("Success!");
+            }
+            Err(e) => println!("Error: {}", e),
         }
-        Err(e) => println!("Error: {}", e),
-    }
 
-    let tokens = lexer(&input.trim());
-    //println!("{:?}", tokens);
-    let ast = parse(tokens);
-    if ast.is_some() {
-        let result = eval(ast.unwrap());
-        println!("{}", result);
+        let tokens = lexer(&input.trim());
+        //println!("{:?}", tokens);
+        let ast = parse(tokens);
+        if ast.is_some() {
+            let result = eval(ast.unwrap());
+            println!("> {}", result);
+        }
+        //println!("Hello, world!");
     }
-    //println!("Hello, world!");
 }

@@ -10,6 +10,9 @@ fn is_number(source: &str) -> bool {
     let re = Regex::new(NUMBER_REGEX).unwrap();
     re.is_match(source)
 }
+fn is_pow (source: &str) -> bool {
+    source == "^"
+}
 fn is_plus(source: &str) -> bool {
     source == "+"
 }
@@ -33,6 +36,9 @@ fn get_possible_tokens(source: &str) -> Vec<Token> {
     let mut possible_tokens: Vec<Token> = Vec::new();
     if is_number(source) {
         possible_tokens.push(Token::Number(source.to_string()));
+    }
+    if is_pow(source) {
+        possible_tokens.push(Token::PowOp);
     }
     if is_plus(source) {
         possible_tokens.push(Token::PlusOp);

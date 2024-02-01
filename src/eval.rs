@@ -7,11 +7,6 @@ pub fn eval(ast: Node) -> f32 {
             let b = eval(*b);
             a + b
         }
-        Node::Subtract(a, b) => {
-            let a = eval(*a);
-            let b = eval(*b);
-            a - b
-        }
         Node::Multiply(a, b) => {
             let a = eval(*a);
             let b = eval(*b);
@@ -24,6 +19,11 @@ pub fn eval(ast: Node) -> f32 {
                 panic!("Division by zero");
             }
             a / b
+        }
+        Node::Pow(a, b) => {
+            let a = eval(*a);
+            let b = eval(*b);
+            a.powf(b)
         }
         Node::Number(n) => n.parse::<f32>().unwrap(),
         Node::Parenthesis(n) => eval(*n),
