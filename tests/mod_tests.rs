@@ -92,6 +92,7 @@ mod tests {
         );
     }
 
+    #[test]
     fn test_eval6() {
         let tokens = lexer("1 - (- 1)");
         let ast = parse(tokens);
@@ -99,6 +100,17 @@ mod tests {
         assert_eq!(
             result,
             2.0
+        );
+    }
+    
+    #[test]
+    fn test_eval7() {
+        let tokens = lexer("-0-0-0+1");
+        let ast = parse(tokens);
+        let result = eval(ast.unwrap());
+        assert_eq!(
+            result,
+            1.0
         );
     }
 }

@@ -216,9 +216,9 @@ fn parse_left_side_expression(tokens: &[Token], parent: &Option<Node>) -> Option
 
 // Parsea una expresión, puede ser una operación o un número no negativo
 fn parse_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
-    let mut node = parse_between_parenthesis_expression(&tokens);
+    let mut node = parse_add(&tokens);
     if node.is_none() {
-        node = parse_add(tokens);
+        node = parse_between_parenthesis_expression(tokens);
     }
     if node.is_none() {
         node = parse_substract(tokens);
@@ -263,12 +263,12 @@ Divide -> LeftSideExpression DivideOp Expression
 
 // Build AST (Abstract-Syntax-Tree)
 pub fn parse(tokens: Vec<Token>) -> Option<Node> {
-    let root = parse_left_side_expression(&tokens, &Some(Node::Root));
+    let root = parse_expression(&tokens, &Some(Node::Root));
 
    
 
     let serialized = serde_json::to_string_pretty(&root).unwrap();
-    //println!("{}", serialized);
+    println!("{}", serialized);
 
     if root.is_none() {
         panic!("SyntaxError: Invalid syntax");
