@@ -2,15 +2,22 @@ use core::panic;
 
 use regex::Regex;
 
-use crate::structs::Token;
+use crate::structs::{InterpreterError, MathConstants, Token};
 
 const NUMBER_REGEX: &str = r"^\d+(\.\d*)?$";
+
+fn is_pi(source: &str) -> bool {
+    source == "pi"
+}
+fn is_e(source: &str) -> bool {
+    source == "e"
+}
 
 fn is_number(source: &str) -> bool {
     let re = Regex::new(NUMBER_REGEX).unwrap();
     re.is_match(source)
 }
-fn is_pow (source: &str) -> bool {
+fn is_pow(source: &str) -> bool {
     source == "^"
 }
 fn is_plus(source: &str) -> bool {
@@ -40,6 +47,12 @@ fn get_possible_tokens(source: &str) -> Vec<Token> {
     if is_pow(source) {
         possible_tokens.push(Token::PowOp);
     }
+    if is_pi(source) {
+        possible_tokens.push(Token::Constant(MathConstants::Pi));
+    }
+    if is_e(source) {
+        possible_tokens.push(Token::Constant(MathConstants::E));
+    }
     if is_plus(source) {
         possible_tokens.push(Token::PlusOp);
     }
@@ -61,8 +74,9 @@ fn get_possible_tokens(source: &str) -> Vec<Token> {
     possible_tokens
 }
 
-pub fn lexer(source: &str) -> Vec<Token> {
+pub fn lexer(source: &str) -> Result<Vec<Token>, InterpreterError> {
     //println!("lexer: {}", source);
+    let source_lower = source.to_lowercase();
 
     let mut tokens: Vec<Token> = Vec::new();
     let mut previous_possible_tokens: Vec<Token> = Vec::new();
@@ -70,8 +84,8 @@ pub fn lexer(source: &str) -> Vec<Token> {
     let mut start = 0;
     let mut end = 1;
 
-    while end <= source.len() {
-        let current_char = &source[start..end];
+    while end <= source_lower.len() {
+        let current_char = &source_lower[start..end];
         let possible_tokens: Vec<Token> = get_possible_tokens(current_char);
         //println!("{:?}_{}_({}-{})", possible_tokens, current_char, start, end);
 
@@ -85,7 +99,7 @@ pub fn lexer(source: &str) -> Vec<Token> {
                     previous_possible_tokens = Vec::new();
                     start = end - 1;
                 } else {
-                    panic!("Invalid token: {}", current_char);
+                    end += 1;
                 }
             }
         } else {
@@ -93,10 +107,14 @@ pub fn lexer(source: &str) -> Vec<Token> {
             end += 1;
         }
 
-        if end > source.len() {
-            tokens.push(previous_possible_tokens[0].clone());
+        if end > source_lower.len() {
+            if previous_possible_tokens.len() >= 1 {
+                tokens.push(previous_possible_tokens[0].clone());
+            } else {
+                return Err(InterpreterError::InvalidToken(current_char.to_string()));
+            }
         }
     }
 
-    tokens
+    Ok(tokens)
 }

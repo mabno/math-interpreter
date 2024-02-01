@@ -1,8 +1,17 @@
 use serde::{Deserialize, Serialize};
 
+use std::fmt;
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub enum MathConstants {
+    Pi,
+    E,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum Token {
     Number(String),
+    Constant(MathConstants),
     PlusOp,
     MinusOp,
     MultiplyOp,
@@ -23,23 +32,24 @@ pub enum Node {
     Divide(Box<Node>, Box<Node>),
     Pow(Box<Node>, Box<Node>),
     Number(String),
-}
-/*
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
-pub struct Node {
-    pub t: NodeType,
-    pub children: Vec<Node>,
+    Constant(MathConstants),
 }
 
-impl Node {
-    pub fn New(t: NodeType) -> Node {
-        Node {
-            t,
-            children: Vec::new(),
-        }
-    }
-    pub fn add_child(&mut self, n: Node) {
-        self.children.push(n);
+#[derive(Debug, Clone)]
+pub enum InterpreterError {
+    MathError(String),
+    SyntaxError,
+    InvalidToken(String),
+}
+
+// Generation of an error is completely separate from how it is displayed.
+// There's no need to be concerned about cluttering complex logic with the display style.
+//
+// Note that we don't store any extra info about the errors. This means we can't state
+// which string failed to parse without modifying our types to carry that information.
+/* impl fmt::Display for InterpreterError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "invalid first item to double")
     }
 }
  */

@@ -1,4 +1,4 @@
-use crate::structs::{Node, Token};
+use crate::structs::{InterpreterError, Node, Token};
 
 fn token_is_operator(token: &Token) -> bool {
     match token {
@@ -17,9 +17,9 @@ fn parse_number(tokens: &[Token]) -> Option<Node> {
             }
             _ => {}
         }
-    } /* else if tokens.len() == 0 {
-          return Some(Node::New(NodeType::Number("0".to_string())));
-      } */
+    } else if tokens.len() == 0 {
+        return Some(Node::Number("0".to_string()));
+    }
     None
 }
 
@@ -221,6 +221,19 @@ fn parse_negative(tokens: &[Token]) -> Option<Node> {
     None
 }
 
+fn parse_constant(tokens: &[Token]) -> Option<Node> {
+    if tokens.len() == 1 {
+        match &tokens[0] {
+            Token::Constant(c) => {
+                let node = Node::Constant(c.clone());
+                return Some(node);
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
 // Parsea una expresión, puede ser una operación o un número no negativo
 fn parse_expression(tokens: &[Token]) -> Option<Node> {
     let mut node = parse_between_parenthesis_expression(tokens);
@@ -242,6 +255,9 @@ fn parse_expression(tokens: &[Token]) -> Option<Node> {
     }
     if node.is_none() {
         node = parse_divide(tokens);
+    }
+    if (node.is_none()) {
+        node = parse_constant(tokens);
     }
     if node.is_none() {
         node = parse_number(tokens)
@@ -273,15 +289,15 @@ Divide -> LeftSideExpression DivideOp Expression
 */
 
 // Build AST (Abstract-Syntax-Tree)
-pub fn parse(tokens: Vec<Token>) -> Option<Node> {
+pub fn parse(tokens: Vec<Token>) -> Result<Node, InterpreterError> {
     let root = parse_expression(&tokens);
 
     let serialized = serde_json::to_string_pretty(&root).unwrap();
-    println!("{}", serialized);
+    //println!("{}", serialized);
 
     if root.is_none() {
-        panic!("SyntaxError: Invalid syntax");
+        return Err(InterpreterError::SyntaxError);
     }
 
-    root
+    Ok(root.unwrap())
 }

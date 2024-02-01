@@ -20,11 +20,23 @@ fn main() {
         }
 
         let tokens = lexer(&input.trim());
+
+        if let Err(e) = tokens {
+            println!("Error: {:?}", e);
+            continue;
+        }
+
         //println!("{:?}", tokens);
-        let ast = parse(tokens);
-        if ast.is_some() {
-            let result = eval(ast.unwrap());
-            println!("> {}", result);
+        let ast = parse(tokens.unwrap());
+        match ast {
+            Err(e) => println!("Error: {:?}", e),
+            Ok(ast) => {
+                let result = eval(ast);
+                match result {
+                    Ok(r) => println!("> {}", r),
+                    Err(e) => println!("Error: {:?}", e),
+                }
+            }
         }
         //println!("Hello, world!");
     }
