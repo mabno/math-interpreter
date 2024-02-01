@@ -25,6 +25,7 @@ pub fn eval(ast: Node) -> f32 {
             let b = eval(*b);
             a.powf(b)
         }
+        Node::Negative(n) => -eval(*n),
         Node::Number(n) => n.parse::<f32>().unwrap(),
         Node::Parenthesis(n) => eval(*n),
         Node::Root => 0.0,

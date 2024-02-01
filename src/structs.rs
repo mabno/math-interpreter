@@ -17,6 +17,7 @@ pub enum Token {
 pub enum Node {
     Root,
     Parenthesis(Box<Node>),
+    Negative(Box<Node>),
     Add(Box<Node>, Box<Node>),
     Multiply(Box<Node>, Box<Node>),
     Divide(Box<Node>, Box<Node>),

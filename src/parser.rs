@@ -217,19 +217,21 @@ fn parse_between_parenthesis_expression(tokens: &[Token]) -> Option<Node> {
 
 // Es una expresion normal, solamente contempla la posibilidad de que sea un numero negativo
 fn parse_left_side_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
-    let mut node = parse_negative_number(tokens);
-    if node.is_none() {
-        node = parse_expression(tokens, parent);
+    if tokens[0] == Token::MinusOp {
+        if let Some(n) = parse_expression(&tokens[1..], parent) {
+        let mut node = Some(Node::Negative(
+                Box::new(
+                    n
+            )));
+            return node
+        }
     }
-    node
+    parse_expression(tokens, parent)
 }
 
 // Parsea una expresión, puede ser una operación o un número no negativo
 fn parse_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
     let mut node = parse_between_parenthesis_expression(&tokens);
-    if node.is_none() {
-        node = parse_pow(tokens);
-    }
     if node.is_none() {
         node = parse_add(tokens);
     }
@@ -238,6 +240,9 @@ fn parse_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
     }
     if node.is_none() {
         node = parse_multiply(tokens);
+    }
+    if node.is_none() {
+        node = parse_pow(tokens);
     }
     if node.is_none() {
         node = parse_divide(tokens);
@@ -278,7 +283,7 @@ pub fn parse(tokens: Vec<Token>) -> Option<Node> {
    
 
     let serialized = serde_json::to_string_pretty(&root).unwrap();
-    //println!("{}", serialized);
+    println!("{}", serialized);
 
     if root.is_none() {
         panic!("SyntaxError: Invalid syntax");

@@ -20,7 +20,7 @@ fn main() {
         }
 
         let tokens = lexer(&input.trim());
-        //println!("{:?}", tokens);
+        println!("{:?}", tokens);
         let ast = parse(tokens);
         if ast.is_some() {
             let result = eval(ast.unwrap());
