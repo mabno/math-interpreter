@@ -16,7 +16,7 @@ pub fn eval(ast: Node) -> f32 {
             let a = eval(*a);
             let b = eval(*b);
             if b == 0.0 {
-                panic!("Division by zero");
+                panic!("RuntimeMathError: Division by zero");
             }
             a / b
         }

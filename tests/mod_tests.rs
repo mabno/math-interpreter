@@ -69,4 +69,15 @@ mod tests {
             -20.0
         );
     }
+
+    #[test]
+    fn test_eval4() {
+        let tokens = lexer("1 - (5 ^ 2) - 0.1");
+        let ast = parse(tokens);
+        let result = eval(ast.unwrap());
+        assert_eq!(
+            result,
+            -24.1
+        );
+    }
 }

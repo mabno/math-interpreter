@@ -29,23 +29,6 @@ fn parse_number(tokens: &[Token]) -> Option<Node> {
     return None
 }
 
-// Parsea un número negativo
-fn parse_negative_number(tokens: &[Token]) -> Option<Node> {
-    if tokens.len() == 2 {
-        match &tokens[0] {
-            Token::MinusOp => match &tokens[1] {
-                Token::Number(n) => {
-                    let node = Node::Number(format!("-{}", n));
-                    return Some(node);
-                }
-                _ => {}
-            },
-            _ => {}
-        }
-    }
-    return None;
-}
-
 // Parsea la operación potencia entre dos expresiones
 fn parse_pow(tokens: &[Token]) -> Option<Node> {
     let mut opened_parenthesis = 0;
@@ -106,11 +89,11 @@ fn parse_add(tokens: &[Token]) -> Option<Node> {
     return None;
 }
 
-// Parsea la operación resta entre dos expresiones
+// Parsea la operación resta entre dos expresiones.
 fn parse_substract(tokens: &[Token]) -> Option<Node> {
     let mut opened_parenthesis = 0;
 
-    for (i, token) in tokens.iter().enumerate() {
+    for (i, token) in tokens.iter().enumerate().rev() {
         match token {
             Token::LeftParenthesis => {
                 opened_parenthesis += 1;
@@ -283,7 +266,7 @@ pub fn parse(tokens: Vec<Token>) -> Option<Node> {
    
 
     let serialized = serde_json::to_string_pretty(&root).unwrap();
-    println!("{}", serialized);
+    //println!("{}", serialized);
 
     if root.is_none() {
         panic!("SyntaxError: Invalid syntax");
