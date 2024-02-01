@@ -80,4 +80,25 @@ mod tests {
             -24.1
         );
     }
+
+    #[test]
+    fn test_eval5() {
+        let tokens = lexer("1 - 1 - 1 - 1");
+        let ast = parse(tokens);
+        let result = eval(ast.unwrap());
+        assert_eq!(
+            result,
+            -2.0
+        );
+    }
+
+    fn test_eval6() {
+        let tokens = lexer("1 - (- 1)");
+        let ast = parse(tokens);
+        let result = eval(ast.unwrap());
+        assert_eq!(
+            result,
+            2.0
+        );
+    }
 }

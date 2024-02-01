@@ -200,7 +200,8 @@ fn parse_between_parenthesis_expression(tokens: &[Token]) -> Option<Node> {
 
 // Es una expresion normal, solamente contempla la posibilidad de que sea un numero negativo
 fn parse_left_side_expression(tokens: &[Token], parent: &Option<Node>) -> Option<Node> {
-    if tokens[0] == Token::MinusOp {
+
+    if tokens.len() > 0 && tokens[0] == Token::MinusOp{
         if let Some(n) = parse_expression(&tokens[1..], parent) {
         let mut node = Some(Node::Negative(
                 Box::new(
@@ -209,6 +210,7 @@ fn parse_left_side_expression(tokens: &[Token], parent: &Option<Node>) -> Option
             return node
         }
     }
+    
     parse_expression(tokens, parent)
 }
 
